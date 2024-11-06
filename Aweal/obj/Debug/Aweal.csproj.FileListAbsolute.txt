@@ -1,0 +1,10 @@
+C:\Users\hp\source\repos\Aweal\Aweal\bin\Debug\Aweal.exe.config
+C:\Users\hp\source\repos\Aweal\Aweal\bin\Debug\Aweal.exe
+C:\Users\hp\source\repos\Aweal\Aweal\bin\Debug\Aweal.pdb
+C:\Users\hp\source\repos\Aweal\Aweal\obj\Debug\Aweal.csproj.AssemblyReference.cache
+C:\Users\hp\source\repos\Aweal\Aweal\obj\Debug\Aweal.MainForm.resources
+C:\Users\hp\source\repos\Aweal\Aweal\obj\Debug\Aweal.Properties.Resources.resources
+C:\Users\hp\source\repos\Aweal\Aweal\obj\Debug\Aweal.csproj.GenerateResource.cache
+C:\Users\hp\source\repos\Aweal\Aweal\obj\Debug\Aweal.csproj.CoreCompileInputs.cache
+C:\Users\hp\source\repos\Aweal\Aweal\obj\Debug\Aweal.exe
+C:\Users\hp\source\repos\Aweal\Aweal\obj\Debug\Aweal.pdb
