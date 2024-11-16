@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Users\\hp\\source\\repos\\Aweal\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{84066D64-C671-4FD1-B9EF-96540E5608B2}|Aweal\\Aweal.csproj|c:\\users\\hp\\source\\repos\\aweal\\aweal\\wheelcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{84066D64-C671-4FD1-B9EF-96540E5608B2}|Aweal\\Aweal.csproj|solutionrelative:aweal\\wheelcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{84066D64-C671-4FD1-B9EF-96540E5608B2}|Aweal\\Aweal.csproj|c:\\users\\hp\\source\\repos\\aweal\\aweal\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{84066D64-C671-4FD1-B9EF-96540E5608B2}|Aweal\\Aweal.csproj|solutionrelative:aweal\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
@@ -14,7 +18,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 5,
           "Children": [
             {
               "$type": "Bookmark",
@@ -34,15 +38,28 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "MainForm.cs",
               "DocumentMoniker": "C:\\Users\\hp\\source\\repos\\Aweal\\Aweal\\MainForm.cs",
               "RelativeDocumentMoniker": "Aweal\\MainForm.cs",
-              "ToolTip": "C:\\Users\\hp\\source\\repos\\Aweal\\Aweal\\MainForm.cs",
-              "RelativeToolTip": "Aweal\\MainForm.cs",
-              "ViewState": "AgIAABYDAAAAAAAAAAAAACADAAAkAAAAAAAAAA==",
+              "ToolTip": "C:\\Users\\hp\\source\\repos\\Aweal\\Aweal\\MainForm.cs*",
+              "RelativeToolTip": "Aweal\\MainForm.cs*",
+              "ViewState": "AgIAAE4BAAAAAAAAAAAqwFQBAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-11-06T15:48:30.494Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "WheelControl.cs",
+              "DocumentMoniker": "C:\\Users\\hp\\source\\repos\\Aweal\\Aweal\\WheelControl.cs",
+              "RelativeDocumentMoniker": "Aweal\\WheelControl.cs",
+              "ToolTip": "C:\\Users\\hp\\source\\repos\\Aweal\\Aweal\\WheelControl.cs*",
+              "RelativeToolTip": "Aweal\\WheelControl.cs*",
+              "ViewState": "AgIAAJEAAAAAAAAAAAAuwK8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-11-16T00:29:32.755Z",
               "EditorCaption": ""
             }
           ]

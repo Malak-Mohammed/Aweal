@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
@@ -13,6 +14,7 @@ namespace Aweal
         int countSchools = 0;
         int countQ = 0;
         int turn = 1;
+        int chosenQ = 0;
         private Label lblQuestionCount;
         private SqlConnection connection;
         private ListBox listBoxSchools;
@@ -42,6 +44,7 @@ namespace Aweal
         private Button btnQuestions;
         private Button btnWheel;
         private Button btnScores;
+        private WheelControl wheelControl;
         //private TextBox txtQuestionImage;
         //private TextBox txtQuestionAudio;
         //private TextBox txtOptionAImage;
@@ -65,8 +68,21 @@ namespace Aweal
             InitializePanelScores();
             InitializePanelQuestionSelection();
             InitializePanelAddQuestions();
-            LoadSchoolCount(); // Load school count on form load
-            LoadQuestionCount(); // Load question count on form load
+            LoadSchoolCount();
+            LoadQuestionCount();
+            LoadSchoolsIntoWheel();
+
+            // Initially hide all panels except the start panel
+            panelWheel.Visible = false;
+            panelMenu.Visible = true; // Assuming start panel navigates to menu
+            panelSchools.Visible = false;
+            panelQuestions.Visible = false;
+            panelScores.Visible = false;
+            panelQuestionSelection.Visible = false;
+            panelAddQuestion.Visible = false;
+
+            // Set form to full screen
+            this.WindowState = FormWindowState.Maximized;
         }
 
         private void InitializeComponent()
@@ -141,7 +157,7 @@ namespace Aweal
 
             // Panel: Wheel
             this.panelWheel.Location = new Point(220, 10);
-            this.panelWheel.Size = new Size(400, 300);
+            this.panelWheel.Size = new Size(900,900);
             this.panelWheel.Visible = false;
 
             // Panel: Scores
@@ -191,35 +207,39 @@ namespace Aweal
 
         private void InitializePanelSchools()
         {
+            panelSchools = new Panel { Dock = DockStyle.Fill };
+            this.Controls.Add(panelSchools);
+
             TextBox txtSchoolName = new TextBox { Location = new Point(10, 10), Size = new Size(380, 50) };
             Button btnAddSchool = new Button { Text = "Add School", Location = new Point(10, 40) };
             btnAddSchool.Click += new EventHandler(this.btnAddSchool_Click);
             listBoxSchools = new ListBox { Location = new Point(10, 70), Size = new Size(380, 200) };
 
-            // Add Label for School Count
             lblSchoolCount = new Label { Location = new Point(10, 280), AutoSize = true };
             Button btnBackSchools = new Button { Text = "Back", Location = new Point(100, 270), Size = new Size(80, 30) };
             btnBackSchools.Click += new EventHandler(this.BackButton_Click);
 
-            Button btnResetSchools = new Button { Text = "Reset", Location = new Point(300, 270), Size = new Size(80, 30) }; 
+            Button btnResetSchools = new Button { Text = "Reset", Location = new Point(300, 270), Size = new Size(80, 30) };
             btnResetSchools.Click += new EventHandler(this.btnResetSchools_Click);
 
-            Button btnDeleteSchool = new Button { Text = "Delete School", Location = new Point(190, 270), Size = new Size(100, 30) }; 
+            Button btnDeleteSchool = new Button { Text = "Delete School", Location = new Point(190, 270), Size = new Size(100, 30) };
             btnDeleteSchool.Click += new EventHandler(this.btnDeleteSchool_Click);
 
-            this.panelSchools.Controls.Add(txtSchoolName);
-            this.panelSchools.Controls.Add(btnAddSchool);
-            this.panelSchools.Controls.Add(listBoxSchools);
-            this.panelSchools.Controls.Add(btnBackSchools);
-            this.panelSchools.Controls.Add(btnResetSchools);
-            this.panelSchools.Controls.Add(btnDeleteSchool);
+            panelSchools.Controls.Add(txtSchoolName);
+            panelSchools.Controls.Add(btnAddSchool);
+            panelSchools.Controls.Add(listBoxSchools);
+            panelSchools.Controls.Add(lblSchoolCount);
+            panelSchools.Controls.Add(btnBackSchools);
+            panelSchools.Controls.Add(btnResetSchools);
+            panelSchools.Controls.Add(btnDeleteSchool);
             LoadSchools();
         }
-       
-
 
         private void InitializePanelQuestions()
         {
+            panelQuestions = new Panel { Dock = DockStyle.Fill };
+            this.Controls.Add(panelQuestions);
+
             lblQuestion = new Label { Location = new Point(10, 10), AutoSize = true };
             pictureBoxQuestion = new PictureBox { Location = new Point(10, 50), Size = new Size(100, 100) };
             radioButtonA = new RadioButton { Location = new Point(10, 160), AutoSize = true };
@@ -232,54 +252,121 @@ namespace Aweal
             Button btnBackQuestions = new Button { Text = "Back", Location = new Point(300, 250), Size = new Size(80, 30) };
             btnBackQuestions.Click += new EventHandler(this.BackButton_Click);
 
-            lblQuestionCount = new Label
-            {
-                Location = new Point(150, 10),
-                AutoSize = true
-            };
+            lblQuestionCount = new Label { Location = new Point(150, 10), AutoSize = true };
 
-            this.panelQuestions.Controls.Add(lblQuestion);
-            this.panelQuestions.Controls.Add(pictureBoxQuestion);
-            this.panelQuestions.Controls.Add(radioButtonA);
-            this.panelQuestions.Controls.Add(radioButtonB);
-            this.panelQuestions.Controls.Add(radioButtonC);
-            this.panelQuestions.Controls.Add(radioButtonD);
-            this.panelQuestions.Controls.Add(btnSubmitAnswer);
-            this.panelQuestions.Controls.Add(lblQuestionCount);
-            this.panelQuestions.Controls.Add(btnBackQuestions);
-            LoadQuestionCount();
-
+            panelQuestions.Controls.Add(lblQuestion);
+            panelQuestions.Controls.Add(pictureBoxQuestion);
+            panelQuestions.Controls.Add(radioButtonA);
+            panelQuestions.Controls.Add(radioButtonB);
+            panelQuestions.Controls.Add(radioButtonC);
+            panelQuestions.Controls.Add(radioButtonD);
+            panelQuestions.Controls.Add(btnSubmitAnswer);
+            panelQuestions.Controls.Add(btnBackQuestions);
+            panelQuestions.Controls.Add(lblQuestionCount);
         }
 
         private void InitializePanelWheel()
         {
-            Button btnSpinWheel = new Button { Text = "Spin Wheel", Location = new Point(10, 10), Size = new Size(100, 50) };
-            btnSpinWheel.Click += new EventHandler(this.btnSpinWheel_Click);
-            panelSeating = new Panel { Location = new Point(10, 70), Size = new Size(380, 240) };
-            Button btnBackWheel = new Button { Text = "Back", Location = new Point(300, 250), Size = new Size(80, 30) };
-            btnBackWheel.Click += new EventHandler(this.BackButton_Click);
+            panelWheel = new Panel { Dock = DockStyle.Fill };
+            this.Controls.Add(panelWheel);
 
-            this.panelWheel.Controls.Add(btnSpinWheel);
-            this.panelWheel.Controls.Add(panelSeating);
-            this.panelWheel.Controls.Add(btnBackWheel);
+            // Define a reasonable size for the wheel
+            Size wheelSize = new Size(300, 300);
 
+            // Calculate the position to center the wheel in the panel
+            Point wheelPosition = new Point(
+                (panelWheel.Width - wheelSize.Width) / 2,
+                (panelWheel.Height - wheelSize.Height) / 2
+            );
+
+            wheelControl = new WheelControl(connection)
+            {
+                Location = wheelPosition,
+                Size = wheelSize,
+                Anchor = AnchorStyles.None // Ensure it stays centered
+            };
+            panelWheel.Controls.Add(wheelControl);
+
+            // Add a button to spin the wheel
+            Button btnSpin = new Button
+            {
+                Text = "Spin",
+                Location = new Point(
+                    (panelWheel.Width - 100) / 2,
+                    wheelControl.Bottom + 10
+                ),
+                Size = new Size(100, 30)
+            };
+            btnSpin.Click += new EventHandler(this.btnSpin_Click);
+            panelWheel.Controls.Add(btnSpin);
+
+            // Add a back button
+            Button btnBack = new Button
+            {
+                Text = "Back",
+                Location = new Point(
+                    (panelWheel.Width - 100) / 2,
+                    wheelControl.Bottom + 50
+                ),
+                Size = new Size(100, 30)
+            };
+            btnBack.Click += new EventHandler(this.btnBack_Click);
+            panelWheel.Controls.Add(btnBack);
+
+            // Ensure the controls resize properly when the panel resizes
+            panelWheel.Resize += (s, e) =>
+            {
+                wheelPosition = new Point(
+                    (panelWheel.Width - wheelSize.Width) / 2,
+                    (panelWheel.Height - wheelSize.Height) / 2
+                );
+                wheelControl.Location = wheelPosition;
+
+                btnSpin.Location = new Point(
+                    (panelWheel.Width - btnSpin.Width) / 2,
+                    wheelControl.Bottom + 10
+                );
+
+                btnBack.Location = new Point(
+                    (panelWheel.Width - btnBack.Width) / 2,
+                    wheelControl.Bottom + 50
+                );
+            };
         }
+
+        private void btnSpin_Click(object sender, EventArgs e)
+        {
+            wheelControl.Spin();
+        }
+
+        
+        private void btnBack_Click(object sender, EventArgs e)
+        {
+            HideAllPanels();
+            this.panelMenu.Visible = true;
+        }
+
+
 
         private void InitializePanelScores()
         {
-            Label lblScores = new Label { Text = "Scores", Location = new Point(10, 10), AutoSize = true };
-            listBoxScores = new ListBox { Location = new Point(10, 40), Size = new Size(380, 240) };
+            panelScores = new Panel { Dock = DockStyle.Fill };
+            this.Controls.Add(panelScores);
 
-            Button btnBackScores = new Button { Text = "Back", Location = new Point(300, 250), Size = new Size(80, 30) }; 
+            listBoxScores = new ListBox { Dock = DockStyle.Fill };
+            panelScores.Controls.Add(listBoxScores);
+
+            Button btnBackScores = new Button { Text = "Back", Location = new Point(100, 270), Size = new Size(80, 30) };
             btnBackScores.Click += new EventHandler(this.BackButton_Click);
-
-            this.panelScores.Controls.Add(lblScores);
-            this.panelScores.Controls.Add(listBoxScores);
-            this.panelScores.Controls.Add(btnBackScores);
+            panelScores.Controls.Add(btnBackScores);
         }
+       
 
         private void InitializePanelQuestionSelection()
         {
+            panelQuestionSelection = new Panel { Dock = DockStyle.Fill };
+            this.Controls.Add(panelQuestionSelection);
+
             LoadQuestionCount();
             // Dynamically create buttons for each question
             for (int i = 1; i <= countQ; i++) // Assuming there are 10 questions
@@ -294,13 +381,14 @@ namespace Aweal
                 btnQuestion.Click += new EventHandler(this.QuestionButton_Click);
                 this.panelQuestionSelection.Controls.Add(btnQuestion);
             }
-            Button btnBackQuestionSelection = new Button { Text = "Back", Location = new Point(300, 250), Size = new Size(80, 30) }; 
-            btnBackQuestionSelection.Click += new EventHandler(this.BackButton_Click); 
-            this.panelQuestionSelection.Controls.Add(btnBackQuestionSelection); 
+            Button btnBackQuestionSelection = new Button { Text = "Back", Location = new Point(100, 270), Size = new Size(80, 30) };
+            btnBackQuestionSelection.Click += new EventHandler(this.BackButton_Click);
+            panelQuestionSelection.Controls.Add(btnBackQuestionSelection);
         }
         private void InitializePanelAddQuestions()
         {
-            
+            panelAddQuestion = new Panel { Dock = DockStyle.Fill };
+            this.Controls.Add(panelAddQuestion);
 
             // Question Text
             Label lblQuestionText = new Label { Text = "Question Text", Location = new Point(10, 10) };
@@ -402,6 +490,32 @@ namespace Aweal
             Button btnBackAddQuestions = new Button { Text = "Back", Location = new Point(300, 470), Size = new Size(80, 30) };
             btnBackAddQuestions.Click += new EventHandler(this.BackButton_Click);
 
+
+                // Initialize ListBox for questions
+                ListBox listBoxQuestions = new ListBox();
+                listBoxQuestions.Name = "listBoxQuestions";
+                listBoxQuestions.Location = new Point(450, 10);
+                listBoxQuestions.Size = new Size(260, 200);
+                
+
+                // Initialize Delete Button
+                Button buttonDelete = new Button();
+                buttonDelete.Name = "buttonDelete";
+                buttonDelete.Text = "Delete";
+                buttonDelete.Location = new Point(450, 220);
+                buttonDelete.Click += new EventHandler(ButtonDelete_Click);
+                
+
+                // Initialize Reset Button
+                Button buttonReset = new Button();
+                buttonReset.Name = "buttonReset";
+                buttonReset.Text = "Reset";
+                buttonReset.Location = new Point(500, 220);
+                buttonReset.Click += new EventHandler(ButtonReset_Click);
+                
+            
+
+
             // Add Controls to Panel
             this.panelAddQuestion.Controls.Add(lblQuestionText);
             this.panelAddQuestion.Controls.Add(txtQuestionText);
@@ -437,7 +551,148 @@ namespace Aweal
             this.panelAddQuestion.Controls.Add(btnBrowseOptionDAudio);
             this.panelAddQuestion.Controls.Add(btnSaveQuestion);
             this.panelAddQuestion.Controls.Add(btnBackAddQuestions);
+            this.panelAddQuestion.Controls.Add(listBoxQuestions);
+            this.panelAddQuestion.Controls.Add(buttonDelete);
+            this.panelAddQuestion.Controls.Add(buttonReset);
+            
+
+            // Load existing questions into the ListBox
+            LoadQuestionsIntoListBox();
         }
+        private void HideAllPanels()
+        {
+            this.panelMenu.Visible = false;
+            this.panelSchools.Visible = false;
+            this.panelQuestions.Visible = false;
+            this.panelWheel.Visible = false;
+            this.panelScores.Visible = false;
+            this.panelQuestionSelection.Visible = false;
+            this.panelAddQuestion.Visible = false;
+            this.panelStart.Visible = false;
+        }
+
+        private void btnStart_Click(object sender, EventArgs e)
+        {
+            this.panelStart.Visible = false;
+            this.panelMenu.Visible = true;
+        }
+
+        private void btnSchools_Click(object sender, EventArgs e)
+        {
+            HideAllPanels();
+            this.panelSchools.Visible = true;
+        }
+
+        private void btnQuestions_Click(object sender, EventArgs e)
+        {
+            HideAllPanels();
+            this.panelQuestionSelection.Visible = true;
+        }
+
+        private void btnWheel_Click(object sender, EventArgs e)
+        {
+            // Reset the SeatingArrangements table
+            ResetSeatingArrangementsTable();
+
+            // Hide all other panels
+            HideAllPanels();
+
+            // Show the wheel panel
+            this.panelWheel.Visible = true;
+        }
+
+        private void ResetSeatingArrangementsTable()
+        {
+            string dropTableQuery = @"
+        IF OBJECT_ID('dbo.SeatingArrangements', 'U') IS NOT NULL
+        DROP TABLE dbo.SeatingArrangements;
+    ";
+
+            string createTableQuery = @"
+        CREATE TABLE SeatingArrangements (
+            ID INT IDENTITY(1,1) PRIMARY KEY,
+            SeatNumber INT,
+            SchoolID INT,
+            CONSTRAINT FK_SeatingArrangements_Schools FOREIGN KEY (SchoolID) REFERENCES Schools(ID)
+        );
+    ";
+
+            using (SqlCommand command = new SqlCommand(dropTableQuery, connection))
+            {
+                OpenConnection();
+                command.ExecuteNonQuery();
+                CloseConnection();
+            }
+
+            using (SqlCommand command = new SqlCommand(createTableQuery, connection))
+            {
+                OpenConnection();
+                command.ExecuteNonQuery();
+                CloseConnection();
+            }
+        }
+
+
+        private void btnScores_Click(object sender, EventArgs e)
+        {
+            HideAllPanels();
+            this.panelScores.Visible = true;
+            LoadScores();
+        }
+
+        private void btnAddQuestions_Click(object sender, EventArgs e)
+        {
+            HideAllPanels();
+            this.panelAddQuestion.Visible = true;
+        }
+
+        private void LoadSchoolsIntoWheel()
+        {
+            string query = "SELECT Name FROM Schools";
+            using (SqlCommand command = new SqlCommand(query, connection))
+            {
+                OpenConnection();
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    wheelControl.AddItem(reader["Name"].ToString());
+                }
+                reader.Close();
+                CloseConnection();
+            }
+        }
+
+        private void BackButton_Click(object sender, EventArgs e)
+        {
+            HideAllPanels();
+            this.panelMenu.Visible = true;
+        }
+
+        
+
+        private void LoadQuestionsIntoListBox()
+        {
+            ListBox listBoxQuestions = (ListBox)this.panelAddQuestion.Controls["listBoxQuestions"];
+            if (listBoxQuestions != null)
+            {
+                listBoxQuestions.Items.Clear();
+                string query = "SELECT ID FROM Questions";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    OpenConnection();
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        listBoxQuestions.Items.Add(reader["ID"].ToString());
+                    }
+                    reader.Close();
+                    CloseConnection();
+                }
+            }
+        }
+
+
+
         private void RadioButton_CheckedChanged(object sender, EventArgs e)
         {
             RadioButton selectedRadioButton = sender as RadioButton;
@@ -675,23 +930,6 @@ namespace Aweal
             }
         }
 
-
-
-        private void btnStart_Click(object sender, EventArgs e)
-        {
-            this.panelStart.Visible = false;
-            this.panelMenu.Visible = true;
-        }
-
-        private void btnSchools_Click(object sender, EventArgs e)
-        {
-            this.panelMenu.Visible = false;
-            this.panelSchools.Visible = true;
-            this.panelQuestions.Visible = false;
-            this.panelWheel.Visible = false;
-            this.panelScores.Visible = false;
-            this.panelQuestionSelection.Visible = false;
-        }
         private void btnResetSchools_Click(object sender, EventArgs e)
         {
             string deleteQuery = "DELETE FROM Schools";
@@ -712,6 +950,8 @@ namespace Aweal
             LoadSchools();
             LoadSchoolCount();
         }
+
+
         private void LoadQuestionCount()
         {
             string query = "SELECT COUNT(*) FROM Questions";
@@ -724,11 +964,117 @@ namespace Aweal
                 countQ = questionCount;
             }
         }
-        private void btnAddQuestions_Click(object sender, EventArgs e)
+       
+        private void ButtonDelete_Click(object sender, EventArgs e)
         {
-            this.panelMenu.Visible = false;
-            this.panelAddQuestion.Visible = true;
+            ListBox listBoxQuestions = (ListBox)this.panelAddQuestion.Controls["listBoxQuestions"];
+            if (listBoxQuestions != null && listBoxQuestions.SelectedItem != null)
+            {
+                // Get the selected question
+                string selectedQuestion = listBoxQuestions.SelectedItem.ToString();
+
+                // Remove from the ListBox
+                listBoxQuestions.Items.Remove(listBoxQuestions.SelectedItem);
+
+                // Delete from the database
+                string deleteQuery = "DELETE FROM Questions WHERE ID = @ID";
+                using (SqlCommand command = new SqlCommand(deleteQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@ID", selectedQuestion);
+                    OpenConnection();
+                    command.ExecuteNonQuery();
+                    CloseConnection();
+                }
+
+                // Resequence IDs
+                ResequenceQuestionIDs();
+                LoadQuestionsIntoListBox();
+
+                MessageBox.Show("Question deleted successfully.");
+                LoadQuestionCount();
+            }
+            else
+            {
+                MessageBox.Show("Please select a question to delete.");
+            }
         }
+
+        private void ResequenceQuestionIDs()
+        {
+            string createTempTableQuery = @"
+        CREATE TABLE Questions_Temp (
+            ID INT PRIMARY KEY,
+            QuestionText NVARCHAR(MAX),
+            QuestionImage VARBINARY(MAX),
+            QuestionAudio VARBINARY(MAX),
+            OptionA NVARCHAR(MAX),
+            OptionAImage VARBINARY(MAX),
+            OptionAAudio VARBINARY(MAX),
+            OptionB NVARCHAR(MAX),
+            OptionBImage VARBINARY(MAX),
+            OptionBAudio VARBINARY(MAX),
+            OptionC NVARCHAR(MAX),
+            OptionCImage VARBINARY(MAX),
+            OptionCAudio VARBINARY(MAX),
+            OptionD NVARCHAR(MAX),
+            OptionDImage VARBINARY(MAX),
+            OptionDAudio VARBINARY(MAX),
+            CorrectAnswer NVARCHAR(MAX),
+            IsAnswered BIT
+        );
+        
+        INSERT INTO Questions_Temp (ID, QuestionText, QuestionImage, QuestionAudio, OptionA, OptionAImage, OptionAAudio, OptionB, OptionBImage, OptionBAudio, OptionC, OptionCImage, OptionCAudio, OptionD, OptionDImage, OptionDAudio, CorrectAnswer, IsAnswered)
+        SELECT ROW_NUMBER() OVER (ORDER BY ID) AS NewID, QuestionText, QuestionImage, QuestionAudio, OptionA, OptionAImage, OptionAAudio, OptionB, OptionBImage, OptionBAudio, OptionC, OptionCImage, OptionCAudio, OptionD, OptionDImage, OptionDAudio, CorrectAnswer, IsAnswered
+        FROM Questions;
+        
+        DROP TABLE Questions;
+        
+        EXEC sp_rename 'Questions_Temp', 'Questions';
+    ";
+
+            using (SqlCommand command = new SqlCommand(createTempTableQuery, connection))
+            {
+                OpenConnection();
+                command.ExecuteNonQuery();
+                CloseConnection();
+            }
+        }
+
+
+
+        private void ButtonReset_Click(object sender, EventArgs e)
+        {
+            // Clear the ListBox
+            ListBox listBoxQuestions = (ListBox)this.panelAddQuestion.Controls["listBoxQuestions"];
+            if (listBoxQuestions != null)
+            {
+                listBoxQuestions.Items.Clear();
+            }
+
+            // Delete all questions from the database
+            string resetQuery = "DELETE FROM Questions";
+            using (SqlCommand command = new SqlCommand(resetQuery, connection))
+            {
+                OpenConnection();
+                command.ExecuteNonQuery();
+                CloseConnection();
+            }
+
+            // Reset the identity seed value
+            string reseedQuery = "DBCC CHECKIDENT ('Questions', RESEED, 0)";
+            using (SqlCommand command = new SqlCommand(reseedQuery, connection))
+            {
+                OpenConnection();
+                command.ExecuteNonQuery();
+                CloseConnection();
+            }
+
+            MessageBox.Show("All questions have been reset.");
+            LoadQuestionCount();
+        }
+
+
+
 
 
         private void btnSaveQuestion_Click(object sender, EventArgs e)
@@ -796,6 +1142,8 @@ namespace Aweal
                 command.ExecuteNonQuery();
                 CloseConnection();
             }
+             LoadQuestionsIntoListBox(); 
+         
 
             MessageBox.Show("Question saved successfully.");
             LoadQuestionCount();    
@@ -825,9 +1173,9 @@ namespace Aweal
                 DataRowView selectedRow = (DataRowView)listBoxSchools.SelectedItem;
                 string selectedSchool = selectedRow["Name"].ToString();
 
-                string query = "DELETE FROM Schools WHERE Name = @Name";
+                string deleteQuery = "DELETE FROM Schools WHERE Name = @Name";
 
-                using (SqlCommand command = new SqlCommand(query, connection))
+                using (SqlCommand command = new SqlCommand(deleteQuery, connection))
                 {
                     command.Parameters.AddWithValue("@Name", selectedSchool);
                     OpenConnection();
@@ -844,6 +1192,15 @@ namespace Aweal
                     }
                 }
 
+                // Drop foreign key constraints
+                DropForeignKeyConstraints();
+
+                // Resequence School IDs
+                ResequenceSchoolIDs();
+
+                // Recreate foreign key constraints
+                RecreateForeignKeyConstraints();
+
                 LoadSchools();
                 LoadSchoolCount();
             }
@@ -855,42 +1212,96 @@ namespace Aweal
 
 
 
-
-        private void btnQuestions_Click(object sender, EventArgs e)
+        private void ResequenceSchoolIDs()
         {
-            this.panelMenu.Visible = false;
-            this.panelSchools.Visible = false;
-            this.panelQuestions.Visible = false;
-            this.panelWheel.Visible = false;
-            this.panelScores.Visible = false;
-            this.panelQuestionSelection.Visible = true;
+            string dropTempTableQuery = @"
+        IF OBJECT_ID('dbo.Schools_Temp', 'U') IS NOT NULL
+        DROP TABLE dbo.Schools_Temp;
+    ";
+
+            string createTempTableQuery = @"
+        CREATE TABLE Schools_Temp (
+            ID INT PRIMARY KEY,
+            Name NVARCHAR(MAX)
+        );
+
+        INSERT INTO Schools_Temp (ID, Name)
+        SELECT ROW_NUMBER() OVER (ORDER BY ID) AS NewID, Name
+        FROM Schools;
+
+        DROP TABLE Schools;
+
+        EXEC sp_rename 'Schools_Temp', 'Schools';
+    ";
+
+            using (SqlCommand command = new SqlCommand(dropTempTableQuery, connection))
+            {
+                OpenConnection();
+                command.ExecuteNonQuery();
+                CloseConnection();
+            }
+
+            using (SqlCommand command = new SqlCommand(createTempTableQuery, connection))
+            {
+                OpenConnection();
+                command.ExecuteNonQuery();
+                CloseConnection();
+            }
         }
 
-        private void btnWheel_Click(object sender, EventArgs e)
+        private void RecreateForeignKeyConstraints()
         {
-            this.panelMenu.Visible = false;
-            this.panelSchools.Visible = false;
-            this.panelQuestions.Visible = false;
-            this.panelWheel.Visible = true;
-            this.panelScores.Visible = false;
-            this.panelQuestionSelection.Visible = false;
+            // Example for recreating foreign key constraints
+            string addForeignKeyQuery1 = "ALTER TABLE SeatingArrangements ADD CONSTRAINT FK_SeatingArrangements_Schools FOREIGN KEY (SchoolID) REFERENCES Schools(ID);";
+            string addForeignKeyQuery2 = "ALTER TABLE Scores ADD CONSTRAINT FK_Scores_Schools FOREIGN KEY (SchoolID) REFERENCES Schools(ID);";
+
+            using (SqlCommand command = new SqlCommand(addForeignKeyQuery1, connection))
+            {
+                OpenConnection();
+                command.ExecuteNonQuery();
+                CloseConnection();
+            }
+
+            using (SqlCommand command = new SqlCommand(addForeignKeyQuery2, connection))
+            {
+                OpenConnection();
+                command.ExecuteNonQuery();
+                CloseConnection();
+            }
         }
 
-        private void btnScores_Click(object sender, EventArgs e)
+
+
+
+        private void DropForeignKeyConstraints()
         {
-            this.panelMenu.Visible = false;
-            this.panelSchools.Visible = false;
-            this.panelQuestions.Visible = false;
-            this.panelWheel.Visible = false;
-            this.panelScores.Visible = true;
-            this.panelQuestionSelection.Visible = false;
-            LoadScores();
+            string dropForeignKeyQuery = @"
+        DECLARE @sql NVARCHAR(MAX) = N'';
+
+        SELECT @sql += 'ALTER TABLE ' + QUOTENAME(s.name) + '.' + QUOTENAME(t.name) + ' DROP CONSTRAINT ' + QUOTENAME(f.name) + ';'
+        FROM sys.foreign_keys AS f
+        INNER JOIN sys.tables AS t ON f.parent_object_id = t.object_id
+        INNER JOIN sys.schemas AS s ON t.schema_id = s.schema_id
+        WHERE f.referenced_object_id = OBJECT_ID('dbo.Schools');
+
+        EXEC sp_executesql @sql;
+    ";
+
+            using (SqlCommand command = new SqlCommand(dropForeignKeyQuery, connection))
+            {
+                OpenConnection();
+                command.ExecuteNonQuery();
+                CloseConnection();
+            }
         }
+
+ 
 
         private void QuestionButton_Click(object sender, EventArgs e)
         {
             Button clickedButton = (Button)sender;
             int questionNumber = int.Parse(clickedButton.Text.Replace("Question ", ""));
+            chosenQ = questionNumber;
             DisplayQuestion(questionNumber);
             StartTimer();
             this.panelQuestionSelection.Visible = false;
@@ -914,16 +1325,7 @@ namespace Aweal
                 // Handle what happens when time runs out, e.g., show the next question or switch to the next school
             }
         }
-        private void BackButton_Click(object sender, EventArgs e)
-        {
-            this.panelSchools.Visible = false;
-            this.panelQuestions.Visible = false;
-            this.panelWheel.Visible = false;
-            this.panelScores.Visible = false;
-            this.panelQuestionSelection.Visible = false;
-            this.panelMenu.Visible = true;
-            this.panelAddQuestion.Visible = false;
-        }
+      
 
         private void btnSubmitAnswer_Click(object sender, EventArgs e)
         {
@@ -933,7 +1335,7 @@ namespace Aweal
             if (radioButtonC.Checked) selectedAnswer = "C";
             if (radioButtonD.Checked) selectedAnswer = "D";
 
-            int questionNumber = int.Parse(lblQuestion.Text.Replace("Question ", "").Split(':')[0]); // Assuming question label format is "Question {number}: ..."
+            int questionNumber =chosenQ ; // Assuming question label format is "Question {number}: ..."
             int schoolID = turn; // Implement method to get current school's ID
             turn++;
             if (turn > countSchools) turn = 1;
@@ -1006,6 +1408,7 @@ namespace Aweal
             listBoxSchools.DataSource = table;
             listBoxSchools.DisplayMember = "Name";
         }
+
 
         private void btnSpinWheel_Click(object sender, EventArgs e)
         {
