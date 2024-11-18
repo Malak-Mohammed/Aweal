@@ -71,7 +71,6 @@ public class WheelControl : Control
         // Calculate the selected index based on the final angle
         float segmentAngle = 360.0f / items.Count;
         float adjustedAngle = angle % 360; // Normalize the angle to [0, 360)
-
         int selectedIndex = (int)((adjustedAngle + segmentAngle / 2) % 360 / segmentAngle);
         string selectedItem = items[selectedIndex];
 
@@ -136,8 +135,7 @@ public class WheelControl : Control
     {
         base.OnPaint(e);
 
-        if (items.Count == 0)
-            return;
+        if (items.Count == 0) return;
 
         float sweepAngle = 360.0f / items.Count;
         for (int i = 0; i < items.Count; i++)

@@ -15,6 +15,11 @@ namespace Aweal
         int countQ = 0;
         int turn = 1;
         int chosenQ = 0;
+
+        private Panel panelDaySelection;
+        private Button[] dayButtons;
+        private int selectedDay = 1; // Default to Day 1
+
         private Label lblQuestionCount;
         private SqlConnection connection;
         private ListBox listBoxSchools;
@@ -22,6 +27,7 @@ namespace Aweal
         private ListBox listBoxScores;
         private Label lblQuestion;
         private Label lblSchoolCount;
+        private Label lblTime;
         private PictureBox pictureBoxQuestion;
         private RadioButton radioButtonA;
         private RadioButton radioButtonB;
@@ -62,19 +68,23 @@ namespace Aweal
             string connectionString = "Data Source=MALAKS-LAPTOP\\SQLEXPRESS;Initial Catalog=AwaeelMusic;Integrated Security=True;Encrypt=False;";
             connection = new SqlConnection(connectionString);
 
+            InitializePanelDaySelection();
             InitializePanelSchools();
             InitializePanelQuestions();
             InitializePanelWheel();
             InitializePanelScores();
             InitializePanelQuestionSelection();
             InitializePanelAddQuestions();
+            InitializeTimer();
+            InitializeCountdownLabel();
             LoadSchoolCount();
             LoadQuestionCount();
             LoadSchoolsIntoWheel();
 
             // Initially hide all panels except the start panel
+            panelDaySelection.Visible = false;
             panelWheel.Visible = false;
-            panelMenu.Visible = true; // Assuming start panel navigates to menu
+            panelMenu.Visible = false; 
             panelSchools.Visible = false;
             panelQuestions.Visible = false;
             panelScores.Visible = false;
@@ -83,11 +93,13 @@ namespace Aweal
 
             // Set form to full screen
             this.WindowState = FormWindowState.Maximized;
+            
         }
 
         private void InitializeComponent()
         {
             this.panelStart = new Panel();
+            this.panelDaySelection = new Panel();
             this.btnStart = new Button();
             this.panelMenu = new Panel();
             this.panelSchools = new Panel();
@@ -100,6 +112,7 @@ namespace Aweal
             this.btnQuestions = new Button();
             this.btnWheel = new Button();
             this.btnScores = new Button();
+            
 
             // Panel: Start
             this.panelStart.Controls.Add(this.btnStart);
@@ -111,6 +124,11 @@ namespace Aweal
             this.btnStart.Location = new Point(60, 125);
             this.btnStart.Size = new Size(80, 50);
             this.btnStart.Click += new EventHandler(this.btnStart_Click);
+
+            // Panel: Day Selection
+            this.panelDaySelection.Location = new Point(10, 10);
+            this.panelDaySelection.Size = new Size(400, 400); 
+            this.panelDaySelection.Visible = false;
 
             // Panel: Menu
             this.panelMenu.Controls.Add(this.btnSchools);
@@ -193,6 +211,8 @@ namespace Aweal
             this.Controls.Add(this.panelScores);
             this.Controls.Add(this.panelQuestionSelection);
             this.Controls.Add(this.panelAddQuestion);
+            this.Controls.Add(this.panelDaySelection);
+            
 
 
 
@@ -204,6 +224,60 @@ namespace Aweal
             questionTimer.Interval = 1000; // 1 second intervals
             questionTimer.Tick += new EventHandler(Timer_Tick);
         }
+        private void InitializePanelDaySelection()
+        {
+          panelDaySelection=new Panel { Dock = DockStyle.Fill };
+            this.Controls.Add((panelDaySelection));
+
+                this.dayButtons = new Button[6];
+                for (int i = 0; i < 6; i++)
+                {
+                    this.dayButtons[i] = new Button
+                    {
+                        Text = $"Day {i + 1}",
+                        Location = new Point(10, 10 + (i * 50)),
+                        Size = new Size(180, 40),
+                        Tag = i + 1 // Store day number in the Tag property
+                    };
+                    this.dayButtons[i].Click += new EventHandler(this.DayButton_Click);
+                    this.panelDaySelection.Controls.Add(this.dayButtons[i]);
+                }
+
+                Button btnBackDaySelection = new Button
+                {
+                    Text = "Back",
+                    Location = new Point(10, 320),
+                    Size = new Size(180, 40)
+                };
+                btnBackDaySelection.Click += new EventHandler(this.btnBack_Click);
+                this.panelDaySelection.Controls.Add(btnBackDaySelection);
+
+                this.Controls.Add(this.panelDaySelection);
+            
+
+        }
+
+
+        private void InitializeTimer()
+        {
+            questionTimer = new Timer(); 
+            questionTimer.Interval = 1000; // 1 second
+            questionTimer.Tick += Timer_Tick; 
+        }
+
+        private void InitializeCountdownLabel()
+        {
+            lblTime = new Label
+            {
+                Location = new Point(10, 10), // Adjust the location as needed
+                Size = new Size(200, 30),
+                Font = new Font("Arial", 14, FontStyle.Bold),
+                Text = "Time remaining: 0" // Initial text
+            };
+            this.panelQuestions.Controls.Add(lblTime);
+        }
+
+
 
         private void InitializePanelSchools()
         {
@@ -350,17 +424,62 @@ namespace Aweal
 
         private void InitializePanelScores()
         {
-            panelScores = new Panel { Dock = DockStyle.Fill };
-            this.Controls.Add(panelScores);
+            panelScores = new Panel
+            {
+                Size = new Size(400, 500), // Increase size for better visibility
+                BackColor = Color.LightGray,
+                Anchor = AnchorStyles.None // Ensure it stays centered
+            };
 
-            listBoxScores = new ListBox { Dock = DockStyle.Fill };
+            Label lblScores = new Label
+            {
+                Text = "Scores",
+                TextAlign = ContentAlignment.MiddleCenter,
+                Dock = DockStyle.Top,
+                Font = new Font("Arial", 24, FontStyle.Bold),
+                Height = 60, // Explicit height to ensure visibility
+                Padding = new Padding(10) // Added padding to ensure visibility
+            };
+            panelScores.Controls.Add(lblScores);
+
+            // Initialize listBoxScores
+            listBoxScores = new ListBox
+            {
+                Dock = DockStyle.Fill, // Fill the remaining space
+                Font = new Font("Arial", 12)
+            };
             panelScores.Controls.Add(listBoxScores);
 
-            Button btnBackScores = new Button { Text = "Back", Location = new Point(100, 270), Size = new Size(80, 30) };
-            btnBackScores.Click += new EventHandler(this.BackButton_Click);
-            panelScores.Controls.Add(btnBackScores);
+            // Add a back button
+            Button btnBack = new Button
+            {
+                Text = "Back",
+                Dock = DockStyle.Bottom,
+                Height = 40,
+                Font = new Font("Arial", 12)
+            };
+            btnBack.Click += new EventHandler(this.btnBack_Click);
+            panelScores.Controls.Add(btnBack);
+
+            this.Controls.Add(panelScores);
+
+            // Center the panel
+            CenterPanel(panelScores);
+
+            // Ensure the panel stays centered when the form is resized
+            this.Resize += (s, e) => CenterPanel(panelScores);
         }
-       
+
+        private void CenterPanel(Control panel)
+        {
+            panel.Location = new Point(
+                (this.ClientSize.Width - panel.Width) / 2,
+                (this.ClientSize.Height - panel.Height) / 2
+            );
+        }
+
+
+
 
         private void InitializePanelQuestionSelection()
         {
@@ -548,13 +667,19 @@ namespace Aweal
             this.panelAddQuestion.Controls.Add(txtOptionDImage);//31
             this.panelAddQuestion.Controls.Add(btnBrowseOptionDImage);//32
             this.panelAddQuestion.Controls.Add(txtOptionDAudio);//33
-            this.panelAddQuestion.Controls.Add(btnBrowseOptionDAudio);
-            this.panelAddQuestion.Controls.Add(btnSaveQuestion);
-            this.panelAddQuestion.Controls.Add(btnBackAddQuestions);
-            this.panelAddQuestion.Controls.Add(listBoxQuestions);
-            this.panelAddQuestion.Controls.Add(buttonDelete);
-            this.panelAddQuestion.Controls.Add(buttonReset);
-            
+            this.panelAddQuestion.Controls.Add(btnBrowseOptionDAudio);//34
+            this.panelAddQuestion.Controls.Add(btnSaveQuestion);//35
+            this.panelAddQuestion.Controls.Add(btnBackAddQuestions);//36
+            this.panelAddQuestion.Controls.Add(listBoxQuestions);//37
+            this.panelAddQuestion.Controls.Add(buttonDelete);//38
+            this.panelAddQuestion.Controls.Add(buttonReset);//39
+
+            // Time Limit
+            Label lblTimeLimit = new Label { Text = "Time Limit (seconds):", Location = new Point(10, 460) };
+            TextBox txtTimeLimit = new TextBox { Location = new Point(180, 460), Width = 120 };
+            panelAddQuestion.Controls.Add(lblTimeLimit);//40
+            panelAddQuestion.Controls.Add(txtTimeLimit);//41
+
 
             // Load existing questions into the ListBox
             LoadQuestionsIntoListBox();
@@ -569,13 +694,44 @@ namespace Aweal
             this.panelQuestionSelection.Visible = false;
             this.panelAddQuestion.Visible = false;
             this.panelStart.Visible = false;
+            this.panelDaySelection.Visible = false;
         }
 
         private void btnStart_Click(object sender, EventArgs e)
         {
             this.panelStart.Visible = false;
-            this.panelMenu.Visible = true;
+            HideAllPanels();
+            this.panelDaySelection.Visible = true;
         }
+        private void DayButton_Click(object sender, EventArgs e)
+        {
+            Button clickedButton = sender as Button;
+            if (clickedButton != null)
+            {
+                // Assuming the day number is stored in the Tag property of the button
+                selectedDay = (int)clickedButton.Tag;
+                ShowMenuForDay(selectedDay);
+            }
+            else
+            {
+                MessageBox.Show("Error: Clicked button is null.");
+            }
+        }
+
+        private void ShowMenuForDay(int dayIndex)
+        {
+            HideAllPanels();
+            this.panelMenu.Visible = true;
+            this.panelMenu.Tag = dayIndex; // Store day index in the panel's Tag property
+        }
+
+
+        private int GetSelectedDay()
+        {
+            return (int)(this.panelMenu.Tag ?? 1); // Default to Day 1 if not set
+        }
+
+
 
         private void btnSchools_Click(object sender, EventArgs e)
         {
@@ -603,19 +759,21 @@ namespace Aweal
 
         private void ResetSeatingArrangementsTable()
         {
-            string dropTableQuery = @"
-        IF OBJECT_ID('dbo.SeatingArrangements', 'U') IS NOT NULL
-        DROP TABLE dbo.SeatingArrangements;
-    ";
+            string tableName = $"SeatingArrangements{selectedDay}";
 
-            string createTableQuery = @"
-        CREATE TABLE SeatingArrangements (
-            ID INT IDENTITY(1,1) PRIMARY KEY,
-            SeatNumber INT,
-            SchoolID INT,
-            CONSTRAINT FK_SeatingArrangements_Schools FOREIGN KEY (SchoolID) REFERENCES Schools(ID)
-        );
-    ";
+            string dropTableQuery = $@"
+    IF OBJECT_ID('dbo.{tableName}', 'U') IS NOT NULL
+    DROP TABLE dbo.{tableName};
+";
+
+            string createTableQuery = $@"
+    CREATE TABLE {tableName} (
+        ID INT IDENTITY(1,1) PRIMARY KEY,
+        SeatNumber INT,
+        SchoolID INT,
+        CONSTRAINT FK_{tableName}_Schools FOREIGN KEY (SchoolID) REFERENCES Schools{selectedDay}(ID)
+    );
+";
 
             using (SqlCommand command = new SqlCommand(dropTableQuery, connection))
             {
@@ -630,6 +788,8 @@ namespace Aweal
                 command.ExecuteNonQuery();
                 CloseConnection();
             }
+
+            MessageBox.Show($"Seating arrangements for Day {selectedDay} have been reset.");
         }
 
 
@@ -648,7 +808,9 @@ namespace Aweal
 
         private void LoadSchoolsIntoWheel()
         {
-            string query = "SELECT Name FROM Schools";
+            string tableName = $"Schools{selectedDay}";
+            string query = $"SELECT Name FROM {tableName}";
+
             using (SqlCommand command = new SqlCommand(query, connection))
             {
                 OpenConnection();
@@ -662,21 +824,24 @@ namespace Aweal
             }
         }
 
+
         private void BackButton_Click(object sender, EventArgs e)
         {
             HideAllPanels();
             this.panelMenu.Visible = true;
         }
 
-        
+
 
         private void LoadQuestionsIntoListBox()
         {
+            string tableName = $"Questions{selectedDay}";
+
             ListBox listBoxQuestions = (ListBox)this.panelAddQuestion.Controls["listBoxQuestions"];
             if (listBoxQuestions != null)
             {
                 listBoxQuestions.Items.Clear();
-                string query = "SELECT ID FROM Questions";
+                string query = $"SELECT ID FROM {tableName}";
                 using (SqlCommand command = new SqlCommand(query, connection))
                 {
                     OpenConnection();
@@ -690,6 +855,8 @@ namespace Aweal
                 }
             }
         }
+
+
 
 
 
@@ -932,8 +1099,9 @@ namespace Aweal
 
         private void btnResetSchools_Click(object sender, EventArgs e)
         {
-            string deleteQuery = "DELETE FROM Schools";
-            string resetIdQuery = "DBCC CHECKIDENT ('Schools', RESEED, 0)";
+            string tableName = $"Schools{selectedDay}";
+            string deleteQuery = $"DELETE FROM {tableName}";
+            string resetIdQuery = $"DBCC CHECKIDENT ('{tableName}', RESEED, 0)";
 
             using (SqlCommand command = new SqlCommand(deleteQuery, connection))
             {
@@ -947,14 +1115,16 @@ namespace Aweal
                 CloseConnection();
             }
 
-            LoadSchools();
+            LoadSchools();  // This will now load schools for the selected day
             LoadSchoolCount();
         }
 
 
         private void LoadQuestionCount()
         {
-            string query = "SELECT COUNT(*) FROM Questions";
+            string tableName = $"Questions{selectedDay}";
+            string query = $"SELECT COUNT(*) FROM {tableName}";
+
             using (SqlCommand command = new SqlCommand(query, connection))
             {
                 OpenConnection();
@@ -964,7 +1134,8 @@ namespace Aweal
                 countQ = questionCount;
             }
         }
-       
+
+
         private void ButtonDelete_Click(object sender, EventArgs e)
         {
             ListBox listBoxQuestions = (ListBox)this.panelAddQuestion.Controls["listBoxQuestions"];
@@ -972,12 +1143,13 @@ namespace Aweal
             {
                 // Get the selected question
                 string selectedQuestion = listBoxQuestions.SelectedItem.ToString();
+                string tableName = $"Questions{selectedDay}";
 
                 // Remove from the ListBox
                 listBoxQuestions.Items.Remove(listBoxQuestions.SelectedItem);
 
                 // Delete from the database
-                string deleteQuery = "DELETE FROM Questions WHERE ID = @ID";
+                string deleteQuery = $"DELETE FROM {tableName} WHERE ID = @ID";
                 using (SqlCommand command = new SqlCommand(deleteQuery, connection))
                 {
                     command.Parameters.AddWithValue("@ID", selectedQuestion);
@@ -1001,36 +1173,39 @@ namespace Aweal
 
         private void ResequenceQuestionIDs()
         {
-            string createTempTableQuery = @"
-        CREATE TABLE Questions_Temp (
-            ID INT PRIMARY KEY,
-            QuestionText NVARCHAR(MAX),
-            QuestionImage VARBINARY(MAX),
-            QuestionAudio VARBINARY(MAX),
-            OptionA NVARCHAR(MAX),
-            OptionAImage VARBINARY(MAX),
-            OptionAAudio VARBINARY(MAX),
-            OptionB NVARCHAR(MAX),
-            OptionBImage VARBINARY(MAX),
-            OptionBAudio VARBINARY(MAX),
-            OptionC NVARCHAR(MAX),
-            OptionCImage VARBINARY(MAX),
-            OptionCAudio VARBINARY(MAX),
-            OptionD NVARCHAR(MAX),
-            OptionDImage VARBINARY(MAX),
-            OptionDAudio VARBINARY(MAX),
-            CorrectAnswer NVARCHAR(MAX),
-            IsAnswered BIT
-        );
-        
-        INSERT INTO Questions_Temp (ID, QuestionText, QuestionImage, QuestionAudio, OptionA, OptionAImage, OptionAAudio, OptionB, OptionBImage, OptionBAudio, OptionC, OptionCImage, OptionCAudio, OptionD, OptionDImage, OptionDAudio, CorrectAnswer, IsAnswered)
-        SELECT ROW_NUMBER() OVER (ORDER BY ID) AS NewID, QuestionText, QuestionImage, QuestionAudio, OptionA, OptionAImage, OptionAAudio, OptionB, OptionBImage, OptionBAudio, OptionC, OptionCImage, OptionCAudio, OptionD, OptionDImage, OptionDAudio, CorrectAnswer, IsAnswered
-        FROM Questions;
-        
-        DROP TABLE Questions;
-        
-        EXEC sp_rename 'Questions_Temp', 'Questions';
-    ";
+            string tableName = $"Questions{selectedDay}";
+            string tempTableName = $"{tableName}_Temp";
+
+            string createTempTableQuery = $@"
+    CREATE TABLE {tempTableName} (
+        ID INT PRIMARY KEY,
+        QuestionText NVARCHAR(MAX),
+        QuestionImage VARBINARY(MAX),
+        QuestionAudio VARBINARY(MAX),
+        OptionA NVARCHAR(MAX),
+        OptionAImage VARBINARY(MAX),
+        OptionAAudio VARBINARY(MAX),
+        OptionB NVARCHAR(MAX),
+        OptionBImage VARBINARY(MAX),
+        OptionBAudio VARBINARY(MAX),
+        OptionC NVARCHAR(MAX),
+        OptionCImage VARBINARY(MAX),
+        OptionCAudio VARBINARY(MAX),
+        OptionD NVARCHAR(MAX),
+        OptionDImage VARBINARY(MAX),
+        OptionDAudio VARBINARY(MAX),
+        CorrectAnswer NVARCHAR(MAX),
+        IsAnswered BIT
+    );
+    
+    INSERT INTO {tempTableName} (ID, QuestionText, QuestionImage, QuestionAudio, OptionA, OptionAImage, OptionAAudio, OptionB, OptionBImage, OptionBAudio, OptionC, OptionCImage, OptionCAudio, OptionD, OptionDImage, OptionDAudio, CorrectAnswer, IsAnswered)
+    SELECT ROW_NUMBER() OVER (ORDER BY ID) AS NewID, QuestionText, QuestionImage, QuestionAudio, OptionA, OptionAImage, OptionAAudio, OptionB, OptionBImage, OptionBAudio, OptionC, OptionCImage, OptionCAudio, OptionD, OptionDImage, OptionDAudio, CorrectAnswer, IsAnswered
+    FROM {tableName};
+    
+    DROP TABLE {tableName};
+    
+    EXEC sp_rename '{tempTableName}', '{tableName}';
+";
 
             using (SqlCommand command = new SqlCommand(createTempTableQuery, connection))
             {
@@ -1040,19 +1215,16 @@ namespace Aweal
             }
         }
 
-
-
         private void ButtonReset_Click(object sender, EventArgs e)
         {
-            // Clear the ListBox
             ListBox listBoxQuestions = (ListBox)this.panelAddQuestion.Controls["listBoxQuestions"];
             if (listBoxQuestions != null)
             {
                 listBoxQuestions.Items.Clear();
             }
 
-            // Delete all questions from the database
-            string resetQuery = "DELETE FROM Questions";
+            string tableName = $"Questions{selectedDay}";
+            string resetQuery = $"DELETE FROM {tableName}";
             using (SqlCommand command = new SqlCommand(resetQuery, connection))
             {
                 OpenConnection();
@@ -1060,8 +1232,7 @@ namespace Aweal
                 CloseConnection();
             }
 
-            // Reset the identity seed value
-            string reseedQuery = "DBCC CHECKIDENT ('Questions', RESEED, 0)";
+            string reseedQuery = $"DBCC CHECKIDENT ('{tableName}', RESEED, 0)";
             using (SqlCommand command = new SqlCommand(reseedQuery, connection))
             {
                 OpenConnection();
@@ -1069,7 +1240,7 @@ namespace Aweal
                 CloseConnection();
             }
 
-            MessageBox.Show("All questions have been reset.");
+            MessageBox.Show($"All questions for Day {selectedDay} have been reset.");
             LoadQuestionCount();
         }
 
@@ -1079,6 +1250,8 @@ namespace Aweal
 
         private void btnSaveQuestion_Click(object sender, EventArgs e)
         {
+            string tableName = $"Questions{selectedDay}";
+
             string questionText = ((TextBox)this.panelAddQuestion.Controls[5]).Text;
 
             byte[] questionImage = GetFileDataSafe(((TextBox)this.panelAddQuestion.Controls[7])?.Text);
@@ -1104,6 +1277,14 @@ namespace Aweal
             byte[] optionDImage = GetFileDataSafe(((TextBox)this.panelAddQuestion.Controls[32])?.Text);
             byte[] optionDAudio = GetFileDataSafe(((TextBox)this.panelAddQuestion.Controls[34])?.Text);
 
+            // Time Limit
+            int timeLimit = 0;
+            if (!int.TryParse(((TextBox)this.panelAddQuestion.Controls[41]).Text, out timeLimit))
+            {
+                MessageBox.Show("Please enter a valid number for the time limit.");
+                return;
+            }
+
             // Determine Correct Answer
             string correctAnswer = string.Empty;
             if (((RadioButton)this.panelAddQuestion.Controls["rbOptionA"]).Checked) correctAnswer = "A";
@@ -1111,8 +1292,9 @@ namespace Aweal
             if (((RadioButton)this.panelAddQuestion.Controls["rbOptionC"]).Checked) correctAnswer = "C";
             if (((RadioButton)this.panelAddQuestion.Controls["rbOptionD"]).Checked) correctAnswer = "D";
 
-            string query = "INSERT INTO Questions (QuestionText, QuestionImage, QuestionAudio, OptionA, OptionAImage, OptionAAudio, OptionB, OptionBImage, OptionBAudio, OptionC, OptionCImage, OptionCAudio, OptionD, OptionDImage, OptionDAudio, CorrectAnswer) " +
-                           "VALUES (@QuestionText, CONVERT(VARBINARY(MAX), @QuestionImage), CONVERT(VARBINARY(MAX), @QuestionAudio), @OptionAText, CONVERT(VARBINARY(MAX), @OptionAImage), CONVERT(VARBINARY(MAX), @OptionAAudio), @OptionBText, CONVERT(VARBINARY(MAX), @OptionBImage), CONVERT(VARBINARY(MAX), @OptionBAudio), @OptionCText, CONVERT(VARBINARY(MAX), @OptionCImage), CONVERT(VARBINARY(MAX), @OptionCAudio), @OptionDText, CONVERT(VARBINARY(MAX), @OptionDImage), CONVERT(VARBINARY(MAX), @OptionDAudio), @CorrectAnswer)";
+            string query = $@"
+        INSERT INTO {tableName} (QuestionText, QuestionImage, QuestionAudio, OptionA, OptionAImage, OptionAAudio, OptionB, OptionBImage, OptionBAudio, OptionC, OptionCImage, OptionCAudio, OptionD, OptionDImage, OptionDAudio, CorrectAnswer, TimeLimit) 
+        VALUES (@QuestionText, @QuestionImage, @QuestionAudio, @OptionAText, @OptionAImage, @OptionAAudio, @OptionBText, @OptionBImage, @OptionBAudio, @OptionCText, @OptionCImage, @OptionCAudio, @OptionDText, @OptionDImage, @OptionDAudio, @CorrectAnswer, @TimeLimit)";
 
             using (SqlCommand command = new SqlCommand(query, connection))
             {
@@ -1137,16 +1319,17 @@ namespace Aweal
                 command.Parameters.AddWithValue("@OptionDAudio", (object)optionDAudio ?? DBNull.Value);
 
                 command.Parameters.AddWithValue("@CorrectAnswer", (object)correctAnswer ?? DBNull.Value);
+                command.Parameters.AddWithValue("@TimeLimit", (object)timeLimit ?? DBNull.Value);
 
                 OpenConnection();
                 command.ExecuteNonQuery();
                 CloseConnection();
             }
-             LoadQuestionsIntoListBox(); 
-         
+
+            LoadQuestionsIntoListBox();
 
             MessageBox.Show("Question saved successfully.");
-            LoadQuestionCount();    
+            LoadQuestionCount();
         }
 
         private byte[] GetFileDataSafe(string filePath)
@@ -1172,8 +1355,10 @@ namespace Aweal
             {
                 DataRowView selectedRow = (DataRowView)listBoxSchools.SelectedItem;
                 string selectedSchool = selectedRow["Name"].ToString();
+                string tableName = $"Schools{selectedDay}";
+                string seatingTableName = $"SeatingArrangements{selectedDay}";
 
-                string deleteQuery = "DELETE FROM Schools WHERE Name = @Name";
+                string deleteQuery = $"DELETE FROM {tableName} WHERE Name = @Name";
 
                 using (SqlCommand command = new SqlCommand(deleteQuery, connection))
                 {
@@ -1193,13 +1378,13 @@ namespace Aweal
                 }
 
                 // Drop foreign key constraints
-                DropForeignKeyConstraints();
+                DropForeignKeyConstraints(seatingTableName);
 
                 // Resequence School IDs
                 ResequenceSchoolIDs();
 
                 // Recreate foreign key constraints
-                RecreateForeignKeyConstraints();
+                RecreateForeignKeyConstraints(seatingTableName);
 
                 LoadSchools();
                 LoadSchoolCount();
@@ -1211,35 +1396,53 @@ namespace Aweal
         }
 
 
-
-        private void ResequenceSchoolIDs()
+        private void DropForeignKeyConstraints(string seatingTableName)
         {
-            string dropTempTableQuery = @"
-        IF OBJECT_ID('dbo.Schools_Temp', 'U') IS NOT NULL
-        DROP TABLE dbo.Schools_Temp;
-    ";
+            string dropConstraintQuery = $@"
+        ALTER TABLE {seatingTableName} 
+        DROP CONSTRAINT FK_{seatingTableName}_Schools";
 
-            string createTempTableQuery = @"
-        CREATE TABLE Schools_Temp (
-            ID INT PRIMARY KEY,
-            Name NVARCHAR(MAX)
-        );
-
-        INSERT INTO Schools_Temp (ID, Name)
-        SELECT ROW_NUMBER() OVER (ORDER BY ID) AS NewID, Name
-        FROM Schools;
-
-        DROP TABLE Schools;
-
-        EXEC sp_rename 'Schools_Temp', 'Schools';
-    ";
-
-            using (SqlCommand command = new SqlCommand(dropTempTableQuery, connection))
+            using (SqlCommand command = new SqlCommand(dropConstraintQuery, connection))
             {
                 OpenConnection();
                 command.ExecuteNonQuery();
                 CloseConnection();
             }
+        }
+        private void RecreateForeignKeyConstraints(string seatingTableName)
+        {
+            string tableName = $"Schools{selectedDay}";
+            string createConstraintQuery = $@"
+        ALTER TABLE {seatingTableName} 
+        ADD CONSTRAINT FK_{seatingTableName}_Schools 
+        FOREIGN KEY (SchoolID) REFERENCES {tableName}(ID)";
+
+            using (SqlCommand command = new SqlCommand(createConstraintQuery, connection))
+            {
+                OpenConnection();
+                command.ExecuteNonQuery();
+                CloseConnection();
+            }
+        }
+        private void ResequenceSchoolIDs()
+        {
+            string tableName = $"Schools{selectedDay}";
+            string tempTableName = $"{tableName}_Temp";
+
+            string createTempTableQuery = $@"
+    CREATE TABLE {tempTableName} (
+        ID INT PRIMARY KEY,
+        Name NVARCHAR(MAX)
+    );
+
+    INSERT INTO {tempTableName} (ID, Name)
+    SELECT ROW_NUMBER() OVER (ORDER BY ID) AS NewID, Name
+    FROM {tableName};
+
+    DROP TABLE {tableName};
+
+    EXEC sp_rename '{tempTableName}', '{tableName}';
+    ";
 
             using (SqlCommand command = new SqlCommand(createTempTableQuery, connection))
             {
@@ -1249,70 +1452,48 @@ namespace Aweal
             }
         }
 
-        private void RecreateForeignKeyConstraints()
-        {
-            // Example for recreating foreign key constraints
-            string addForeignKeyQuery1 = "ALTER TABLE SeatingArrangements ADD CONSTRAINT FK_SeatingArrangements_Schools FOREIGN KEY (SchoolID) REFERENCES Schools(ID);";
-            string addForeignKeyQuery2 = "ALTER TABLE Scores ADD CONSTRAINT FK_Scores_Schools FOREIGN KEY (SchoolID) REFERENCES Schools(ID);";
 
-            using (SqlCommand command = new SqlCommand(addForeignKeyQuery1, connection))
-            {
-                OpenConnection();
-                command.ExecuteNonQuery();
-                CloseConnection();
-            }
-
-            using (SqlCommand command = new SqlCommand(addForeignKeyQuery2, connection))
-            {
-                OpenConnection();
-                command.ExecuteNonQuery();
-                CloseConnection();
-            }
-        }
-
-
-
-
-        private void DropForeignKeyConstraints()
-        {
-            string dropForeignKeyQuery = @"
-        DECLARE @sql NVARCHAR(MAX) = N'';
-
-        SELECT @sql += 'ALTER TABLE ' + QUOTENAME(s.name) + '.' + QUOTENAME(t.name) + ' DROP CONSTRAINT ' + QUOTENAME(f.name) + ';'
-        FROM sys.foreign_keys AS f
-        INNER JOIN sys.tables AS t ON f.parent_object_id = t.object_id
-        INNER JOIN sys.schemas AS s ON t.schema_id = s.schema_id
-        WHERE f.referenced_object_id = OBJECT_ID('dbo.Schools');
-
-        EXEC sp_executesql @sql;
-    ";
-
-            using (SqlCommand command = new SqlCommand(dropForeignKeyQuery, connection))
-            {
-                OpenConnection();
-                command.ExecuteNonQuery();
-                CloseConnection();
-            }
-        }
-
- 
 
         private void QuestionButton_Click(object sender, EventArgs e)
         {
+            int selectedDay = GetSelectedDay();
+            string tableName = $"Questions{selectedDay}";
+
             Button clickedButton = (Button)sender;
             int questionNumber = int.Parse(clickedButton.Text.Replace("Question ", ""));
             chosenQ = questionNumber;
-            DisplayQuestion(questionNumber);
-            StartTimer();
+
+            // Retrieve the question details including the time limit
+            string query = $"SELECT * FROM {tableName} WHERE ID = @QuestionID";
+            using (SqlCommand command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@QuestionID", questionNumber);
+
+                OpenConnection();
+                SqlDataReader reader = command.ExecuteReader();
+                if (reader.Read())
+                {
+                    // Display the question using the existing method
+                    DisplayQuestion(reader);
+
+                    // Start the timer with the time limit
+                    int timeLimit = (int)reader["TimeLimit"];
+                    StartTimer(timeLimit);
+                }
+                reader.Close();
+                CloseConnection();
+            }
+
             this.panelQuestionSelection.Visible = false;
             this.panelQuestions.Visible = true;
         }
 
-        private void StartTimer()
+        private void StartTimer(int timeLimit)
         {
-            timeRemaining = 30; // 30 seconds to answer
+            timeRemaining = timeLimit; // Set the time limit for the question
             questionTimer.Start();
         }
+
 
         private void Timer_Tick(object sender, EventArgs e)
         {
@@ -1322,10 +1503,16 @@ namespace Aweal
             {
                 questionTimer.Stop();
                 MessageBox.Show("Time's up!");
-                // Handle what happens when time runs out, e.g., show the next question or switch to the next school
+                // Implement logic for what happens when time is up
+            }
+            else
+            {
+                lblTime.Text = $"Time remaining: {timeRemaining} seconds";
             }
         }
-      
+
+
+
 
         private void btnSubmitAnswer_Click(object sender, EventArgs e)
         {
@@ -1335,23 +1522,26 @@ namespace Aweal
             if (radioButtonC.Checked) selectedAnswer = "C";
             if (radioButtonD.Checked) selectedAnswer = "D";
 
-            int questionNumber =chosenQ ; // Assuming question label format is "Question {number}: ..."
-            int schoolID = turn; // Implement method to get current school's ID
+            int questionNumber = chosenQ;
+            int schoolID = turn;
             turn++;
             if (turn > countSchools) turn = 1;
             bool isCorrect = CheckAnswer(selectedAnswer, questionNumber);
 
             if (isCorrect)
             {
-                UpdateScores(schoolID, 1); // Increment score by 1
+                UpdateScores(schoolID, 1);
             }
 
             MarkQuestionAsAnswered(questionNumber);
-            DisplayNextQuestion(); // Implement this method to display the next question
+            DisplayNextQuestion();
         }
+
         private void LoadSchoolCount()
         {
-            string query = "SELECT COUNT(*) FROM Schools";
+            string tableName = $"Schools{selectedDay}";
+            string query = $"SELECT COUNT(*) FROM {tableName}";
+
             using (SqlCommand command = new SqlCommand(query, connection))
             {
                 OpenConnection();
@@ -1362,9 +1552,11 @@ namespace Aweal
             }
         }
 
+
         private void MarkQuestionAsAnswered(int questionNumber)
         {
-            string query = "UPDATE Questions SET IsAnswered = 1 WHERE ID = @Number";
+            string tableName = $"Questions{selectedDay}";
+            string query = $"UPDATE {tableName} SET IsAnswered = 1 WHERE ID = @Number";
 
             using (SqlCommand command = new SqlCommand(query, connection))
             {
@@ -1375,6 +1567,7 @@ namespace Aweal
             }
         }
 
+
         private void DisplayNextQuestion()
         {
             this.panelQuestions.Visible = false;
@@ -1384,7 +1577,8 @@ namespace Aweal
         private void btnAddSchool_Click(object sender, EventArgs e)
         {
             string schoolName = ((TextBox)this.panelSchools.Controls[0]).Text;
-            string query = "INSERT INTO Schools (Name) VALUES (@Name)";
+            string tableName = $"Schools{selectedDay}";
+            string query = $"INSERT INTO {tableName} (Name) VALUES (@Name)";
 
             using (SqlCommand command = new SqlCommand(query, connection))
             {
@@ -1398,9 +1592,12 @@ namespace Aweal
             LoadSchoolCount(); // Update school count
         }
 
+
         private void LoadSchools()
         {
-            string query = "SELECT Name FROM Schools";
+            string tableName = $"Schools{selectedDay}";
+
+            string query = $"SELECT Name FROM {tableName}";
             SqlDataAdapter adapter = new SqlDataAdapter(query, connection);
             DataTable table = new DataTable();
             adapter.Fill(table);
@@ -1408,6 +1605,8 @@ namespace Aweal
             listBoxSchools.DataSource = table;
             listBoxSchools.DisplayMember = "Name";
         }
+
+
 
 
         private void btnSpinWheel_Click(object sender, EventArgs e)
@@ -1448,7 +1647,10 @@ namespace Aweal
 
         private int GetSchoolID(string schoolName)
         {
-            string query = "SELECT ID FROM Schools WHERE Name = @Name";
+            int selectedDay = GetSelectedDay();
+            string tableName = $"Schools{selectedDay}";
+
+            string query = $"SELECT ID FROM {tableName} WHERE Name = @Name";
             using (SqlCommand command = new SqlCommand(query, connection))
             {
                 command.Parameters.AddWithValue("@Name", schoolName);
@@ -1460,9 +1662,12 @@ namespace Aweal
         }
 
 
+
         private void SaveSeatingArrangement(int schoolID)
         {
-            string query = "INSERT INTO SeatingArrangements (SchoolID, SeatNumber) VALUES (@SchoolID, @SeatNumber)";
+            string tableName = $"SeatingArrangements{selectedDay}";
+
+            string query = $"INSERT INTO {tableName} (SchoolID, SeatNumber) VALUES (@SchoolID, @SeatNumber)";
 
             using (SqlCommand command = new SqlCommand(query, connection))
             {
@@ -1479,60 +1684,50 @@ namespace Aweal
         }
 
 
-        private void DisplayQuestion(int questionNumber)
+
+
+        private void DisplayQuestion(SqlDataReader reader)
         {
-            string query = "SELECT * FROM Questions WHERE ID = @Number";
-
-            using (SqlCommand command = new SqlCommand(query, connection))
+            // Display text
+            if (reader["QuestionText"] != DBNull.Value)
             {
-                command.Parameters.AddWithValue("@Number", questionNumber);
-                OpenConnection();
-                SqlDataReader reader = command.ExecuteReader();
-
-                if (reader.Read())
-                {
-                    // Display text
-                    if (reader["QuestionText"] != DBNull.Value)
-                    {
-                        lblQuestion.Text = reader["QuestionText"].ToString();
-                    }
-
-                    // Display image
-                    if (reader["QuestionImage"] != DBNull.Value)
-                    {
-                        byte[] imageData = (byte[])reader["QuestionImage"];
-                        using (MemoryStream ms = new MemoryStream(imageData))
-                        {
-                            pictureBoxQuestion.Image = Image.FromStream(ms);
-                        }
-                    }
-
-                    // Play audio
-                    if (reader["QuestionAudio"] != DBNull.Value)
-                    {
-                        byte[] audioData = (byte[])reader["QuestionAudio"];
-                        using (MemoryStream ms = new MemoryStream(audioData))
-                        {
-                            SoundPlayer player = new SoundPlayer(ms);
-                            player.Play();
-                        }
-                    }
-
-                    // Display options
-                    if (reader["OptionA"] != DBNull.Value) radioButtonA.Text = reader["OptionA"].ToString();
-                    if (reader["OptionB"] != DBNull.Value) radioButtonB.Text = reader["OptionB"].ToString();
-                    if (reader["OptionC"] != DBNull.Value) radioButtonC.Text = reader["OptionC"].ToString();
-                    if (reader["OptionD"] != DBNull.Value) radioButtonD.Text = reader["OptionD"].ToString();
-                }
-
-                reader.Close();
-                CloseConnection();
+                lblQuestion.Text = reader["QuestionText"].ToString();
             }
+
+            // Display image
+            if (reader["QuestionImage"] != DBNull.Value)
+            {
+                byte[] imageData = (byte[])reader["QuestionImage"];
+                using (MemoryStream ms = new MemoryStream(imageData))
+                {
+                    pictureBoxQuestion.Image = Image.FromStream(ms);
+                }
+            }
+
+            // Play audio
+            if (reader["QuestionAudio"] != DBNull.Value)
+            {
+                byte[] audioData = (byte[])reader["QuestionAudio"];
+                using (MemoryStream ms = new MemoryStream(audioData))
+                {
+                    SoundPlayer player = new SoundPlayer(ms);
+                    player.Play();
+                }
+            }
+
+            // Display options
+            if (reader["OptionA"] != DBNull.Value) radioButtonA.Text = reader["OptionA"].ToString();
+            if (reader["OptionB"] != DBNull.Value) radioButtonB.Text = reader["OptionB"].ToString();
+            if (reader["OptionC"] != DBNull.Value) radioButtonC.Text = reader["OptionC"].ToString();
+            if (reader["OptionD"] != DBNull.Value) radioButtonD.Text = reader["OptionD"].ToString();
         }
+
 
         private bool CheckAnswer(string selectedAnswer, int questionNumber)
         {
-            string query = "SELECT CorrectAnswer FROM Questions WHERE ID = @Number";
+            string tableName = $"Questions{selectedDay}";
+
+            string query = $"SELECT CorrectAnswer FROM {tableName} WHERE ID = @Number";
 
             using (SqlCommand command = new SqlCommand(query, connection))
             {
@@ -1547,9 +1742,12 @@ namespace Aweal
 
 
 
+
         private void UpdateScores(int schoolID, int scoreToAdd)
         {
-            string query = "UPDATE Scores SET Score = Score + @ScoreToAdd WHERE SchoolID = @SchoolID";
+            string tableName = $"Scores{selectedDay}";
+
+            string query = $"UPDATE {tableName} SET Score = Score + @ScoreToAdd WHERE SchoolID = @SchoolID";
 
             using (SqlCommand command = new SqlCommand(query, connection))
             {
@@ -1561,17 +1759,34 @@ namespace Aweal
             }
         }
 
+
         private void LoadScores()
         {
-            string query = "SELECT s.Name, sc.Score FROM Schools s INNER JOIN Scores sc ON s.ID = sc.SchoolID ORDER BY sc.Score DESC";
-            SqlDataAdapter adapter = new SqlDataAdapter(query, connection);
-            DataTable table = new DataTable();
-            adapter.Fill(table);
+            listBoxScores.Items.Clear();
+            string scoresTableName = $"Scores{selectedDay}";
+            string schoolsTableName = $"Schools{selectedDay}";
 
-            listBoxScores.DataSource = table;
-            listBoxScores.DisplayMember = "Name";
-            listBoxScores.ValueMember = "Score";
+            string query = $@"
+    SELECT s.Score, sch.Name 
+    FROM {scoresTableName} s
+    JOIN {schoolsTableName} sch ON s.SchoolID = sch.ID";
+
+            using (SqlCommand command = new SqlCommand(query, connection))
+            {
+                OpenConnection();
+                SqlDataReader reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    // Display school name and score
+                    string item = $"{reader["Name"]}: {reader["Score"]}";
+                    listBoxScores.Items.Add(item);
+                }
+                reader.Close();
+                CloseConnection();
+            }
         }
+
+
 
         private void OpenConnection()
         {
