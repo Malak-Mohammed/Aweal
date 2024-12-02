@@ -7,8 +7,15 @@
       "RelativeMoniker": "D:0:0:{84066D64-C671-4FD1-B9EF-96540E5608B2}|Aweal\\Aweal.csproj|solutionrelative:aweal\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{84066D64-C671-4FD1-B9EF-96540E5608B2}|Aweal\\Aweal.csproj|c:\\users\\hp\\source\\repos\\aweal\\aweal\\wheelcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{84066D64-C671-4FD1-B9EF-96540E5608B2}|Aweal\\Aweal.csproj|C:\\Users\\hp\\source\\repos\\Aweal\\aweal\\wheelcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{84066D64-C671-4FD1-B9EF-96540E5608B2}|Aweal\\Aweal.csproj|solutionrelative:aweal\\wheelcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{00000000-0000-0000-0000-000000000000}|\u003CSolution\u003E|Aweal||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{84066D64-C671-4FD1-B9EF-96540E5608B2}|Aweal\\Aweal.csproj|c:\\users\\hp\\source\\repos\\aweal\\aweal\\properties\\resources.resx||{FF4D6ACA-9352-4A5F-821E-F4D6EBDCAB11}",
+      "RelativeMoniker": "D:0:0:{84066D64-C671-4FD1-B9EF-96540E5608B2}|Aweal\\Aweal.csproj|solutionrelative:aweal\\properties\\resources.resx||{FF4D6ACA-9352-4A5F-821E-F4D6EBDCAB11}"
     }
   ],
   "DocumentGroupContainers": [
@@ -18,7 +25,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 5,
           "Children": [
             {
               "$type": "Bookmark",
@@ -38,13 +45,25 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Aweal",
+              "DocumentMoniker": "C:\\Users\\hp\\source\\repos\\Aweal\\Aweal\\Aweal.csproj",
+              "RelativeDocumentMoniker": "Aweal\\Aweal.csproj",
+              "ToolTip": "C:\\Users\\hp\\source\\repos\\Aweal\\Aweal\\Aweal.csproj",
+              "RelativeToolTip": "Aweal\\Aweal.csproj",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2024-11-28T21:35:58.248Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 0,
               "Title": "MainForm.cs",
               "DocumentMoniker": "C:\\Users\\hp\\source\\repos\\Aweal\\Aweal\\MainForm.cs",
               "RelativeDocumentMoniker": "Aweal\\MainForm.cs",
-              "ToolTip": "C:\\Users\\hp\\source\\repos\\Aweal\\Aweal\\MainForm.cs",
-              "RelativeToolTip": "Aweal\\MainForm.cs",
-              "ViewState": "AgIAACoFAAAAAAAAAAASwAEFAAAMAAAAAAAAAA==",
+              "ToolTip": "C:\\Users\\hp\\source\\repos\\Aweal\\Aweal\\MainForm.cs*",
+              "RelativeToolTip": "Aweal\\MainForm.cs*",
+              "ViewState": "AgIAANUAAAAAAAAAAAAowOAAAAA/AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-11-06T15:48:30.494Z",
               "EditorCaption": ""
@@ -57,7 +76,7 @@
               "RelativeDocumentMoniker": "Aweal\\WheelControl.cs",
               "ToolTip": "C:\\Users\\hp\\source\\repos\\Aweal\\Aweal\\WheelControl.cs",
               "RelativeToolTip": "Aweal\\WheelControl.cs",
-              "ViewState": "AgIAAJUAAAAAAAAAAADwv60AAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-11-16T00:29:32.755Z",
               "EditorCaption": ""

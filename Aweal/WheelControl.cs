@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Aweal;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Drawing;
@@ -15,6 +16,14 @@ public class WheelControl : Control
     private int seatNumber;
     private SqlConnection connection;
     private List<Color> colors;
+   
+        private int selectedDay;
+
+        public int SelectedDay
+        {
+            get { return selectedDay; }
+            set { selectedDay = value; }
+        }
 
     public WheelControl(SqlConnection dbConnection)
     {
@@ -88,10 +97,11 @@ public class WheelControl : Control
 
     private void AssignSeat(string school)
     {
-        // Retrieve SchoolID from Schools table
+        // Retrieve SchoolID from the appropriate Schools table
         int schoolID = GetSchoolID(school);
+        string seatingTableName = $"SeatingArrangements{selectedDay}";
 
-        string insertQuery = "INSERT INTO SeatingArrangements (SeatNumber, SchoolID) VALUES (@SeatNumber, @SchoolID)";
+        string insertQuery = $"INSERT INTO {seatingTableName} (SeatNumber, SchoolID) VALUES (@SeatNumber, @SchoolID)";
         using (SqlCommand command = new SqlCommand(insertQuery, connection))
         {
             command.Parameters.AddWithValue("@SeatNumber", seatNumber);
@@ -105,10 +115,13 @@ public class WheelControl : Control
         seatNumber++;
     }
 
+
     private int GetSchoolID(string schoolName)
     {
         int schoolID = 0;
-        string query = "SELECT ID FROM Schools WHERE Name = @Name";
+        string tableName = $"Schools{selectedDay}";
+        string query = $"SELECT ID FROM {tableName} WHERE Name = @Name";
+
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             command.Parameters.AddWithValue("@Name", schoolName);
@@ -123,6 +136,7 @@ public class WheelControl : Control
         }
         return schoolID;
     }
+
 
     public void Reset()
     {

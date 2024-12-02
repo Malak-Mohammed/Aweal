@@ -8,3 +8,4 @@ C:\Users\hp\source\repos\Aweal\Aweal\obj\Debug\Aweal.csproj.GenerateResource.cac
 C:\Users\hp\source\repos\Aweal\Aweal\obj\Debug\Aweal.csproj.CoreCompileInputs.cache
 C:\Users\hp\source\repos\Aweal\Aweal\obj\Debug\Aweal.exe
 C:\Users\hp\source\repos\Aweal\Aweal\obj\Debug\Aweal.pdb
+C:\Users\hp\source\repos\Aweal\Aweal\bin\Debug\Resources\KFGQPC Uthman Taha Naskh Regular.ttf
